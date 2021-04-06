@@ -5,15 +5,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-
-    <ImageView
+    <com.makeramen.roundedimageview.RoundedImageView
         android:id="@+id/articleImage"
         android:layout_width="140dp"
         android:layout_height="140dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/articleTitle"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:riv_corner_radius="10dp"
+        tools:src="@tools:sample/backgrounds/scenic" />
+
+
 
 
     <TextView
