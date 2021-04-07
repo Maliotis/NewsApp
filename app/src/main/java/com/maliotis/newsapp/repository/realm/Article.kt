@@ -18,4 +18,5 @@ open class Article: RealmModel {
     var urlToImage: String? = null
     var publishedAt: String? = null
     var content: String? = null
+    var hidden: Boolean? = null
 }

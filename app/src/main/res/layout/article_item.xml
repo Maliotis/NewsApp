@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/articleItem"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -7,34 +8,70 @@
 
     <com.makeramen.roundedimageview.RoundedImageView
         android:id="@+id/articleImage"
-        android:layout_width="140dp"
-        android:layout_height="140dp"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
         android:scaleType="centerCrop"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="12dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:riv_corner_radius="10dp"
         tools:src="@tools:sample/backgrounds/scenic" />
 
-
-
-
     <TextView
         android:id="@+id/articleTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:ellipsize="end"
+        android:fontFamily="@font/antic_didone"
+        android:maxLines="1"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/articleImage"
+        app:layout_constraintTop_toTopOf="@id/articleImage"
+        tools:text="Very big title here" />
+
+    <TextView
+        android:id="@+id/articlePublishedDate"
         android:layout_width="140dp"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/articleImage"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/articleImage"
+        app:layout_constraintTop_toBottomOf="@id/articleTitle"
         android:layout_marginBottom="12dp"
-        tools:text="Very big title here"
+        android:layout_marginEnd="12dp"
+        android:layout_marginStart="12dp"
+        tools:text="2nd November 13:34"
         android:fontFamily="@font/antic_didone"
         android:textColor="@color/black"
-        android:layout_marginTop="6dp"
-        android:maxLines="2"
-        android:ellipsize="end"
+        android:textSize="12sp"
+        android:layout_marginTop="2dp"
+        android:maxLines="1"
+        android:ellipsize="end" />
 
-        />
+    <TextView
+        android:id="@+id/articleDescription"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toEndOf="@id/articleImage"
+        app:layout_constraintTop_toBottomOf="@id/articlePublishedDate"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/articleImage"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        tools:text="Description about the article is going to be placed here, and any other content is also going to be placed here. Anything further though"
+        android:fontFamily="@font/antic_didone"
+        android:textColor="@color/black"
+        android:textSize="14sp"
+        android:layout_marginTop="6dp"
+        android:maxLines="3"
+        android:ellipsize="end" />
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

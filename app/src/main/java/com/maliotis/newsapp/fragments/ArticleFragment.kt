@@ -1,33 +1,18 @@
 package com.maliotis.newsapp.fragments
 
-import android.graphics.drawable.Drawable
+import android.annotation.SuppressLint
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-import android.transition.TransitionInflater
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebSettings
+import android.webkit.WebView
 import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.ScrollView
-import android.widget.TextView
-import androidx.core.app.SharedElementCallback
-import androidx.core.view.ViewCompat
-import androidx.core.view.ViewPropertyAnimatorListenerAdapter
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.target.Target
-import com.google.android.material.card.MaterialCardView
-import com.makeramen.roundedimageview.RoundedImageView
-import com.maliotis.newsapp.R
-import com.maliotis.newsapp.convertDPToPixels
-import com.maliotis.newsapp.enums.ItemSelected
-import com.maliotis.newsapp.getClickObservable
-import com.maliotis.newsapp.isoToDate
+import com.maliotis.newsapp.*
 import com.maliotis.newsapp.viewModels.NewsViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -41,26 +26,6 @@ class ArticleFragment: Fragment() {
     val viewModel: NewsViewModel by activityViewModels()
     val disposables = CompositeDisposable()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        sharedElementEnterTransition = TransitionInflater.from(requireContext())
-            .inflateTransition(R.transition.shared_image)
-
-        setEnterSharedElementCallback(object : SharedElementCallback() {
-            override fun onMapSharedElements(
-                names: List<String?>?,
-                sharedElements: Map<String?, View?>
-            ) {
-                super.onMapSharedElements(names, sharedElements)
-                
-
-                Log.d(TAG, "onMapSharedElements: ")
-            }
-        })
-
-
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -71,58 +36,30 @@ class ArticleFragment: Fragment() {
         return view
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
-        postponeEnterTransition()
         val articleBackButton = view.findViewById<ImageButton>(R.id.articleBackButton)
-        val scrollView = view.findViewById<ScrollView>(R.id.articleScrollView)
-        val imageView = scrollView.findViewById<RoundedImageView>(R.id.articleLayoutImage)
-        val titleView = scrollView.findViewById<TextView>(R.id.articleLayoutTitle)
-        val contentView = scrollView.findViewById<TextView>(R.id.articleContent)
-        val publishedAtView = scrollView.findViewById<TextView>(R.id.publishedDate)
+        val browserButton = view.findViewById<ImageButton>(R.id.articleOpenInBrowserButton)
+        val webView  = view.findViewById<WebView>(R.id.articleWebView)
+        webView.settings.javaScriptEnabled = true
+        webView.settings.useWideViewPort = true
+        webView.webViewClient = ArticleWebViewClient(requireContext())
+        webView.settings.builtInZoomControls = true
+        webView.settings.displayZoomControls = false
+        webView.settings.setSupportZoom(true)
+        webView.settings.layoutAlgorithm = WebSettings.LayoutAlgorithm.NORMAL
+        webView.setInitialScale(1)
 
         articleBackButtonObserver(articleBackButton)
 
-        ViewCompat.setTransitionName(imageView, "article_imageView")
 
         viewModel.detailArticle.observe(viewLifecycleOwner, {
-            titleView.text = it.title
-            contentView.text = it.description
-            publishedAtView.text = isoToDate(it.publishedAt)
-            Glide.with(requireContext())
-                .load(it.urlToImage)
-//                .transform(RoundedCorners(18))
-//                .centerCrop()
-//                .apply(
-//                    RequestOptions().dontTransform() // this line
-//                )
-                .listener(object : RequestListener<Drawable> {
-
-                    override fun onLoadFailed(
-                        e: GlideException?,
-                        model: Any?,
-                        target: Target<Drawable>?,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        startPostponedEnterTransition()
-                        return false
-                    }
-
-                    override fun onResourceReady(
-                        resource: Drawable?,
-                        model: Any?,
-                        target: Target<Drawable>?,
-                        dataSource: DataSource?,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        startPostponedEnterTransition()
-                        return false
-                    }
-                })
-
-                .into(imageView)
+            it.url?.run {
+                webView.loadUrl(this)
+                articleOpenInBrowserButtonObserver(browserButton, this)
+            }
         })
 
     }
@@ -130,23 +67,25 @@ class ArticleFragment: Fragment() {
     private fun articleBackButtonObserver(backButton: ImageButton) {
         val backDisp = backButton.getClickObservable()
             .debounce(300, TimeUnit.MILLISECONDS)
-            .subscribeOn(AndroidSchedulers.mainThread())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
-                Log.d(
-                    TAG,
-                    "articleBackButtonObserver: thread.name = ${Thread.currentThread().name}"
-                )
-                val view = it.parent as ViewGroup
-                val scrollView = view.findViewById<ScrollView>(R.id.articleScrollView)
-                val imageView = scrollView.findViewById<RoundedImageView>(R.id.articleLayoutImage)
-
-                val sharedViewsList = listOf<View>(imageView)
-                val pair = Pair(ItemSelected.ARTICLEBACK, sharedViewsList)
-                viewModel.selectItem(pair)
+                requireActivity().onBackPressed()
             }
 
         disposables.add(backDisp)
+    }
+
+    private fun articleOpenInBrowserButtonObserver(browserButton: ImageButton, url: String) {
+        val browserDisp = browserButton.getClickObservable()
+                .debounce(300, TimeUnit.MILLISECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+                        startActivity(this)
+                    }
+                }
+
+        disposables.add(browserDisp)
     }
 
     override fun onDestroy() {

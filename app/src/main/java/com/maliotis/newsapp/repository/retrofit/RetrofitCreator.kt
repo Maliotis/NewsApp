@@ -13,11 +13,8 @@ object RetrofitCreator {
     var version2 = "v2"
     var typeEverything = "everything"
     var typeTopHeadlines = "top-headlines"
-    var page = 1
 
-    var options = mutableMapOf<String, String>("q" to "entertainment",
-
-        "apiKey" to Keys.apiKey())
+    var options = mutableMapOf<String, String>("q" to "entertainment", "apiKey" to Keys.apiKey())
 
     var httpClient = OkHttpClient.Builder()
 
