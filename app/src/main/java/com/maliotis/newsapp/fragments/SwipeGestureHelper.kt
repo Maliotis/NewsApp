@@ -2,6 +2,7 @@ package com.maliotis.newsapp.fragments
 
 import android.graphics.Canvas
 import android.graphics.Color
+import android.view.HapticFeedbackConstants
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -28,6 +29,8 @@ class SwipeGestureHelper(val articleAdapter: ArticleAdapter,
                 val article = articleAdapter.listArticles[position]
                 val articleId = article.id
                 viewModel.hideArticle(articleId)
+                recyclerView.isHapticFeedbackEnabled = true
+                recyclerView.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK, HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING)
 
                 Snackbar.make(recyclerView, "", Snackbar.LENGTH_LONG)
                         .setAction("Undo") {

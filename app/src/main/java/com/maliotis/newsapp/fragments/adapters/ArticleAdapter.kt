@@ -47,11 +47,11 @@ class ArticleAdapter(val listener: ArticleClickListener): RecyclerView.Adapter<A
         }
     }
 
-    fun setData(newRating: List<Article>) {
-        val diffCallback = ArticleDiffCallback(listArticles, newRating)
+    fun setData(newArticles: List<Article>) {
+        val diffCallback = ArticleDiffCallback(listArticles, newArticles)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
         listArticles.clear()
-        listArticles.addAll(newRating)
+        listArticles.addAll(newArticles)
         diffResult.dispatchUpdatesTo(this)
     }
 

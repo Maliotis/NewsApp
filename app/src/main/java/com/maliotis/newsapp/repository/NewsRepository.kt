@@ -72,10 +72,11 @@ class NewsRepository {
                         if (deleteOldArticles)
                             deleteOutdatedArticles(r)
 
-                        r.insertOrUpdate(it)
+                        val uniqueArticles = uniqueArticles(it, r)
+                        r.insertOrUpdate(uniqueArticles)
                     }, { // onSuccess
                         Log.d(TAG, "onSuccess: realm executed successfully")
-                        realm.close()
+                        //realm.close()
 
                     }, { onError ->
                         Log.e(TAG, "onError: realm failed -- ", onError)
@@ -108,23 +109,20 @@ class NewsRepository {
         disposables.add(sub)
     }
 
-    private fun deleteOutdatedArticles(r: Realm) {
+    /**
+     * Maintain database small
+     * No need to have more than 140 articles stored
+     */
+    fun deleteOutdatedArticles(r: Realm) {
         Log.d(TAG, "deleteOutdatedArticles: delete called")
-        val oldArticles = r.where(Article::class.java).sort("publishedAt", Sort.ASCENDING).limit(20).findAll()
-        Log.d(TAG, "deleteOutdatedArticles: oldArticles.size = ${oldArticles.size}")
-        Log.d(TAG, "deleteOutdatedArticles: oldArticles = $oldArticles")
-        //oldArticles.deleteAllFromRealm()
 
-//        if (allArticles.size >= 100) {
-//            // then delete at least as much as we are adding in
-//            // delete the most outdated
-//            val endIndex = news.articles?.size ?: 0
-//            val subArticles = allArticles.subList(0, endIndex)
-//            subArticles.forEach {
-//                it.deleteFromRealm()
-//                Log.d(TAG, "deleteOutdatedArticles: item deleted")
-//            }
-//        }
+        val allArticles = r.where(Article::class.java).findAll()
+        if (allArticles.size > 140) {
+            val oldArticles = r.where(Article::class.java).sort("publishedAt", Sort.ASCENDING).limit(20).findAll()
+            Log.d(TAG, "deleteOutdatedArticles: oldArticles.size = ${oldArticles.size}")
+            Log.d(TAG, "deleteOutdatedArticles: oldArticles = $oldArticles")
+            oldArticles.deleteAllFromRealm()
+        }
     }
 
     private fun setRealmIDs(news: News?) {
@@ -132,6 +130,16 @@ class NewsRepository {
             it.id = it.url.hashCode().toString()
             it.source?.realmId = UUID.randomUUID().toString()
         }
+    }
+
+    private fun uniqueArticles(articles: List<Article>, r: Realm): List<Article> {
+        val allArticles = r.where(Article::class.java).findAll()
+        val uniqueArticles = mutableListOf<Article>()
+        for(article in articles) {
+            if (article.id !in allArticles.map { it.id }) uniqueArticles.add(article)
+        }
+
+        return uniqueArticles
     }
 
 }

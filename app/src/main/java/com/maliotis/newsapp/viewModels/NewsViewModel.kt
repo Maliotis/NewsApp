@@ -4,21 +4,20 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.maliotis.newsapp.RealmUtil.realm
 import com.maliotis.newsapp.enums.ApiStatus
 import com.maliotis.newsapp.repository.NewsRepository
 import com.maliotis.newsapp.repository.realm.Article
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
-import io.realm.OrderedCollectionChangeSet
-import io.realm.Realm
 import io.realm.RealmResults
 import io.realm.Sort
-import io.realm.kotlin.deleteFromRealm
+
 
 class NewsViewModel: ViewModel() {
     val TAG = NewsViewModel::class.java.simpleName
 
-    val realm = Realm.getDefaultInstance()
+    //val realm = Realm.getDefaultInstance()
 
     // Communication between fragment - Activity
     private val mutableSelectedItem = MutableLiveData<Article>()
@@ -38,7 +37,8 @@ class NewsViewModel: ViewModel() {
     val newsApiSucceeded: Subject<ApiStatus> = PublishSubject.create()
 
     private val articleResults: RealmResults<Article> by lazy {
-        realm.where(Article::class.java).notEqualTo("hidden", true).findAllAsync()
+        realm.where(Article::class.java).equalTo("hidden", false)
+            .or().isNull("hidden").findAllAsync()
     }
 
     // convenient var to add only 1 listener
