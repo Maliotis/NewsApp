@@ -52,6 +52,8 @@ class NewsFragment: Fragment(), ArticleClickListener {
         val itemTouchHelper = ItemTouchHelper(swipeGestureHelper)
         itemTouchHelper.attachToRecyclerView(newsRecyclerView)
 
+
+
         return view
     }
 
@@ -69,6 +71,7 @@ class NewsFragment: Fragment(), ArticleClickListener {
         disposables.add(disp)
 
         scrollToPosition(state)
+        scrollWhenMovingFirstItem()
 
         val newsApiDisp = newsViewModel.newsApiSucceeded.subscribe { apiStatus ->
             when (apiStatus) {
@@ -105,9 +108,6 @@ class NewsFragment: Fragment(), ArticleClickListener {
 
         newsViewModel.getArticles().observe(viewLifecycleOwner, { item ->
             articleAdapter.setData(item)
-//            val start = articleAdapter.listArticles.size
-//            articleAdapter.listArticles.addAll(item.toMutableList())
-//            articleAdapter.notifyItemRangeInserted(start, item.size)
         })
 
 
@@ -152,8 +152,21 @@ class NewsFragment: Fragment(), ArticleClickListener {
 
             }
         })
+    }
 
+    /**
+     * Workaround for the issue
+     * https://stackoverflow.com/questions/27992427/recyclerview-adapter-notifyitemmoved0-1-scrolls-screen
+     */
+    private fun scrollWhenMovingFirstItem() {
+        articleAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
 
+            override fun onItemRangeMoved(fromPosition: Int, toPosition: Int, itemCount: Int) {
+                super.onItemRangeMoved(fromPosition, toPosition, itemCount)
+                val layoutManager: LinearLayoutManager = newsRecyclerView.layoutManager as LinearLayoutManager
+                layoutManager.scrollToPosition(fromPosition)
+            }
+        })
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

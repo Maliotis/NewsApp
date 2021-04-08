@@ -6,7 +6,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <com.makeramen.roundedimageview.RoundedImageView
+    <ImageView
         android:id="@+id/articleImage"
         android:layout_width="100dp"
         android:layout_height="100dp"
@@ -17,8 +17,21 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:riv_corner_radius="10dp"
         tools:src="@tools:sample/backgrounds/scenic" />
+
+    <ImageView
+        android:id="@+id/articlePin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="@id/articleImage"
+        app:layout_constraintStart_toStartOf="@id/articleImage"
+        android:layout_marginTop="2dp"
+        android:layout_marginStart="2dp"
+        app:tint="#008BA3"
+        android:alpha="0"
+        android:elevation="2dp"
+        android:background="@drawable/circular_bg"
+        android:src="@drawable/ic_push_pin_black_24dp"/>
 
     <TextView
         android:id="@+id/articleTitle"

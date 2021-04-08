@@ -35,7 +35,6 @@ class NewsRepository {
             options
         )
 
-        // delete old articles when fetching new ones
         subscribeToApi(newsCall, true, subject)
     }
 
@@ -113,14 +112,12 @@ class NewsRepository {
      * Maintain database small
      * No need to have more than 140 articles stored
      */
-    fun deleteOutdatedArticles(r: Realm) {
-        Log.d(TAG, "deleteOutdatedArticles: delete called")
-
+    private fun deleteOutdatedArticles(r: Realm) {
         val allArticles = r.where(Article::class.java).findAll()
         if (allArticles.size > 140) {
-            val oldArticles = r.where(Article::class.java).sort("publishedAt", Sort.ASCENDING).limit(20).findAll()
-            Log.d(TAG, "deleteOutdatedArticles: oldArticles.size = ${oldArticles.size}")
-            Log.d(TAG, "deleteOutdatedArticles: oldArticles = $oldArticles")
+            // don't delete hidden articles as the user probably doesn't want to see them again
+            val oldArticles = r.where(Article::class.java).equalTo("hidden", false)
+                    .or().isNull("hidden").sort("publishedAt", Sort.ASCENDING).limit(20).findAll()
             oldArticles.deleteAllFromRealm()
         }
     }

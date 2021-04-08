@@ -19,4 +19,5 @@ open class Article: RealmModel {
     var publishedAt: String? = null
     var content: String? = null
     var hidden: Boolean? = null
+    var pinned: Boolean? = null
 }

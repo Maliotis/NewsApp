@@ -4,12 +4,12 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.util.Log
+import android.view.*
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.ImageButton
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.maliotis.newsapp.*
@@ -26,6 +26,11 @@ class ArticleFragment: Fragment() {
     val viewModel: NewsViewModel by activityViewModels()
     val disposables = CompositeDisposable()
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -40,9 +45,9 @@ class ArticleFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val articleBackButton = view.findViewById<ImageButton>(R.id.articleBackButton)
-        val browserButton = view.findViewById<ImageButton>(R.id.articleOpenInBrowserButton)
+        val toolbar = view.findViewById<Toolbar>(R.id.articleToolbar)
         val webView  = view.findViewById<WebView>(R.id.articleWebView)
+
         webView.settings.javaScriptEnabled = true
         webView.settings.useWideViewPort = true
         webView.webViewClient = ArticleWebViewClient(requireContext())
@@ -52,40 +57,44 @@ class ArticleFragment: Fragment() {
         webView.settings.layoutAlgorithm = WebSettings.LayoutAlgorithm.NORMAL
         webView.setInitialScale(1)
 
-        articleBackButtonObserver(articleBackButton)
+        toolbar.inflateMenu(R.menu.article_web_menu)
 
+        toolBarNavigationObserver(toolbar)
 
         viewModel.detailArticle.observe(viewLifecycleOwner, {
             it.url?.run {
                 webView.loadUrl(this)
-                articleOpenInBrowserButtonObserver(browserButton, this)
+                toolBarMenuItemObserver(toolbar, this)
             }
         })
 
     }
 
-    private fun articleBackButtonObserver(backButton: ImageButton) {
-        val backDisp = backButton.getClickObservable()
+    private fun toolBarNavigationObserver(toolbar: Toolbar) {
+        val disp = toolbar.getNavigationOnClickObservable()
             .debounce(300, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
                 requireActivity().onBackPressed()
             }
 
-        disposables.add(backDisp)
+        disposables.add(disp)
     }
 
-    private fun articleOpenInBrowserButtonObserver(browserButton: ImageButton, url: String) {
-        val browserDisp = browserButton.getClickObservable()
-                .debounce(300, TimeUnit.MILLISECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
-                        startActivity(this)
+    private fun toolBarMenuItemObserver(toolbar: Toolbar, url: String) {
+        val disp = toolbar.getMenuItemClickObservable()
+            .debounce(300, TimeUnit.MILLISECONDS)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                when(it.itemId) {
+                    R.id.articleOpenInBrowserButton -> {
+                        Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+                            startActivity(this)
+                        }
                     }
                 }
-
-        disposables.add(browserDisp)
+            }
+        disposables.add(disp)
     }
 
     override fun onDestroy() {

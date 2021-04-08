@@ -4,35 +4,34 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/white"
-    xmlns:tools="http://schemas.android.com/tools">
+    android:animateLayoutChanges="true">
 
-    <ImageButton
-        android:id="@+id/articleBackButton"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/articleToolbar"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="12dp"
-        android:layout_marginStart="12dp"
-        android:background="@android:color/transparent"
-        android:src="@drawable/ic_arrow_back_24px"/>
+        android:background="@color/purple_500"
+        app:title="@string/app_name"
+        app:titleTextColor="@color/white"
+        app:navigationIcon="@drawable/ic_arrow_back_24px"
+        android:elevation="6dp"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:popupTheme="@style/Theme.AppCompat.Light"/>
 
-    <ImageButton
-        android:id="@+id/articleOpenInBrowserButton"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="12dp"
-        android:layout_marginEnd="12dp"
-        android:background="@android:color/transparent"
-        android:src="@drawable/ic_open_in_new_black_24dp"/>
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/articleProgressBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/articleToolbar"
+        android:indeterminate="true"/>
 
     <WebView
         android:id="@+id/articleWebView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/articleBackButton"
+        app:layout_constraintTop_toBottomOf="@id/articleProgressBar"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>

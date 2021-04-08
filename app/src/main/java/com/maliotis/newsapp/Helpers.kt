@@ -6,17 +6,24 @@ import android.media.Image
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import android.util.TypedValue
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.target.Target.SIZE_ORIGINAL
+import com.google.gson.Gson
+import com.maliotis.newsapp.repository.realm.Article
 
 import io.reactivex.Observable
+import io.realm.RealmModel
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -54,17 +61,23 @@ fun isoToDate(isoString: String?): String {
     return ""
 }
 
-inline fun <T> T.guard(block: T.() -> Unit): T {
-    if (this == null) block(); return this
-}
-
-fun <T: View> T.getClickObservable(): Observable<T> {
+fun <T: androidx.appcompat.widget.Toolbar> T.getNavigationOnClickObservable(): Observable<View> {
     return Observable.create { emitter ->
-        this.setOnClickListener {
-            emitter.onNext(this)
+        this.setNavigationOnClickListener {
+            emitter.onNext(it)
         }
     }
 }
+
+fun <T: androidx.appcompat.widget.Toolbar> T.getMenuItemClickObservable(): Observable<MenuItem> {
+    return Observable.create { emitter ->
+        this.setOnMenuItemClickListener {
+            emitter.onNext(it)
+            true
+        }
+    }
+}
+
 
 fun ImageView.load(url: String?, loadOnlyFromCache: Boolean = false, onLoadingFinished: () -> Unit = {}) {
     val listener = object : RequestListener<Drawable> {
@@ -79,14 +92,13 @@ fun ImageView.load(url: String?, loadOnlyFromCache: Boolean = false, onLoadingFi
         }
     }
     val requestOptions = RequestOptions.placeholderOf(R.drawable.placeholder)
-        //.override(SIZE_ORIGINAL)
-        .dontTransform()
-        .onlyRetrieveFromCache(loadOnlyFromCache)
+            .transform(CenterCrop(), RoundedCorners(18))
+            .onlyRetrieveFromCache(loadOnlyFromCache)
 
-        Glide.with(this)
-        .load(url)
-        .apply(requestOptions)
-        .listener(listener)
-        .into(this)
+    Glide.with(this)
+            .load(url)
+            .apply(requestOptions)
+            .listener(listener)
+            .into(this)
 }
 

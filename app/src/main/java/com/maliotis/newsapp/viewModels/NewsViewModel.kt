@@ -69,44 +69,12 @@ class NewsViewModel: ViewModel() {
                 Log.d(TAG, "subscribeToArticles: t.size = ${t.size}")
                 Log.d(TAG, "subscribeToArticles: changeSet.state = ${changeSet.state}")
                 Log.d(TAG, "subscribeToArticles: changeSet = ${changeSet.toString()}")
-                articles.postValue(t.sort("publishedAt", Sort.DESCENDING).toList())
+                val tList = t.toList()
+                Log.d(TAG, "subscribeToArticles: ")
 
-//                if (t.isNotEmpty() && changeSet.state == OrderedCollectionChangeSet.State.INITIAL) {
-//                    articles.postValue(t.sort("publishedAt", Sort.DESCENDING).toList())
-//                }
-//
-//                if (changeSet.state == OrderedCollectionChangeSet.State.UPDATE &&  changeSet.insertionRanges.isNotEmpty()) {
-//                    var tempArticles = mutableListOf<Article>()
-//                    changeSet.insertionRanges.forEach {
-//                        val startIndex = it.startIndex
-//                        val length = startIndex + it.length
-//                        for (i in startIndex until length) {
-//                            t[i]?.let { article ->
-//                                tempArticles.add(article)
-//                            }
-//                        }
-//                    }
-//                    Log.d(TAG, "subscribeToArticles: new articles inserted.size = ${tempArticles.size}")
-//                    Log.d(TAG, "subscribeToArticles: new articles inserted = $tempArticles")
-//                    tempArticles.sortWith { article1, article2 ->
-//                        article1?.publishedAt?.compareTo(article2?.publishedAt ?: "") ?: 0
-//                    }
-//                    articles.postValue(tempArticles.asReversed())
-//                } else if (changeSet.state == OrderedCollectionChangeSet.State.UPDATE &&  changeSet.changeRanges.isNotEmpty()) {
-//                    Log.d(TAG, "subscribeToArticles: ")
-//                    var tempArticles = mutableListOf<Article>()
-//                    changeSet.changeRanges.forEach {
-//                        val startIndex = it.startIndex
-//                        val length = startIndex + it.length
-//                        for (i in startIndex until length) {
-//                            t[i]?.let { article ->
-//                                if (article.hidden == true)
-//                                    tempArticles.add(article)
-//                            }
-//                        }
-//                    }
-//
-//                }
+                val sortedList = tList.sortedWith( compareBy( { it.pinned }, { it.publishedAt })).asReversed()
+                val unmanagedList = realm.copyFromRealm(sortedList)
+                articles.postValue(unmanagedList)
 
             }
         }
@@ -117,6 +85,15 @@ class NewsViewModel: ViewModel() {
         realm.executeTransactionAsync {
             val article: Article? = it.where(Article::class.java).equalTo("id", articleId).findFirst()
             article?.hidden = hide
+        }
+    }
+
+    fun pinItem(articleId: String?, pin: Boolean = true) {
+        if (articleId == null) return
+        realm.executeTransactionAsync {
+            val article: Article? = it.where(Article::class.java).equalTo("id", articleId).findFirst()
+            article?.pinned = pin
+            //article?.hidden = hide
         }
     }
 
