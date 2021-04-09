@@ -6,8 +6,8 @@ import androidx.activity.viewModels
 import androidx.fragment.app.add
 import androidx.fragment.app.commit
 import androidx.fragment.app.replace
-import com.maliotis.newsapp.fragments.ArticleFragment
-import com.maliotis.newsapp.fragments.NewsFragment
+import com.maliotis.newsapp.fragments.articleFragment.ArticleFragment
+import com.maliotis.newsapp.fragments.newsFragment.NewsFragment
 import com.maliotis.newsapp.viewModels.NewsViewModel
 
 

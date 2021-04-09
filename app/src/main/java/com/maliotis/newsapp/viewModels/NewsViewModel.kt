@@ -59,7 +59,7 @@ class NewsViewModel: ViewModel() {
     // load the first page of news
     private fun loadArticles() {
         subscribeToArticles()
-        newsRepository.getNews(newsApiSucceeded)
+        getNews()
     }
 
     private fun subscribeToArticles() {
@@ -88,13 +88,17 @@ class NewsViewModel: ViewModel() {
         }
     }
 
-    fun pinItem(articleId: String?, pin: Boolean = true) {
+    fun pinArticle(articleId: String?, pin: Boolean = true) {
         if (articleId == null) return
         realm.executeTransactionAsync {
             val article: Article? = it.where(Article::class.java).equalTo("id", articleId).findFirst()
             article?.pinned = pin
             //article?.hidden = hide
         }
+    }
+
+    fun getNews() {
+        newsRepository.getNews(newsApiSucceeded)
     }
 
     fun getOlderNews() {

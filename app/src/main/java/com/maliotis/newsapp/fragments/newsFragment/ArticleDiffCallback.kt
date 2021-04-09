@@ -1,4 +1,4 @@
-package com.maliotis.newsapp.fragments
+package com.maliotis.newsapp.fragments.newsFragment
 
 import android.util.Log
 import androidx.recyclerview.widget.DiffUtil
@@ -36,7 +36,4 @@ class ArticleDiffCallback(private val oldList: List<Article>, private val newLis
         return hidden == hidden1
     }
 
-    override fun getChangePayload(oldPosition: Int, newPosition: Int): Any? {
-        return super.getChangePayload(oldPosition, newPosition)
-    }
 }

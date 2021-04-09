@@ -1,14 +1,12 @@
-package com.maliotis.newsapp.fragments
+package com.maliotis.newsapp.fragments.articleFragment
 
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.webkit.WebSettings
 import android.webkit.WebView
-import android.widget.ImageButton
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -72,7 +70,7 @@ class ArticleFragment: Fragment() {
 
     private fun toolBarNavigationObserver(toolbar: Toolbar) {
         val disp = toolbar.getNavigationOnClickObservable()
-            .debounce(300, TimeUnit.MILLISECONDS)
+            .throttleFirst(300, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
                 requireActivity().onBackPressed()
@@ -83,7 +81,7 @@ class ArticleFragment: Fragment() {
 
     private fun toolBarMenuItemObserver(toolbar: Toolbar, url: String) {
         val disp = toolbar.getMenuItemClickObservable()
-            .debounce(300, TimeUnit.MILLISECONDS)
+            .throttleFirst(300, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
                 when(it.itemId) {

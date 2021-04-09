@@ -6,5 +6,8 @@ object Keys {
         System.loadLibrary("native-lib")
     }
 
+    /**
+     * Returns the News API Key
+     */
     external fun apiKey(): String
 }

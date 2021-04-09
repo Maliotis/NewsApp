@@ -64,7 +64,7 @@ class NewsRepository {
             .subscribe({ news ->
                 Log.d(TAG, "onResponse: news ${news?.status}")
                 subject.onNext(ApiStatus.SUCCESS)
-                setRealmIDs(news)
+                setRealmIDsAndAttributes(news)
 
                 news?.articles?.let {
                     realm.executeTransactionAsync({ r ->
@@ -122,10 +122,15 @@ class NewsRepository {
         }
     }
 
-    private fun setRealmIDs(news: News?) {
+    private fun setRealmIDsAndAttributes(news: News?) {
         news?.articles?.forEach {
             it.id = it.url.hashCode().toString()
             it.source?.realmId = UUID.randomUUID().toString()
+            // setting these values to false as if the item exists it won't be inserted
+            // therefore won't affect the user's preferences
+            // but if they do get inserted they will have value for comparisons
+            it.pinned = false
+            it.hidden = false
         }
     }
 

@@ -1,15 +1,13 @@
-package com.maliotis.newsapp.fragments
+package com.maliotis.newsapp.fragments.newsFragment
 
 import android.graphics.Canvas
 import android.graphics.Color
 import android.view.HapticFeedbackConstants
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.maliotis.newsapp.R
-import com.maliotis.newsapp.fragments.adapters.ArticleAdapter
-import com.maliotis.newsapp.repository.realm.Article
+import com.maliotis.newsapp.fragments.adapters.NewsAdapter
 import com.maliotis.newsapp.viewModels.NewsViewModel
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 
@@ -17,7 +15,7 @@ import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 /**
  * A helper SwipeGesture implementation for deleting and pining articles
  */
-class SwipeGestureHelper(val articleAdapter: ArticleAdapter,
+class SwipeGestureHelper(val newsAdapter: NewsAdapter,
                          val recyclerView: RecyclerView,
                          val viewModel: NewsViewModel):
         ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
@@ -32,7 +30,7 @@ class SwipeGestureHelper(val articleAdapter: ArticleAdapter,
         when(direction) {
             ItemTouchHelper.LEFT -> {
                 // hide item
-                val article = articleAdapter.listArticles[position]
+                val article = newsAdapter.listArticles[position]
                 val articleId = article.id
                 viewModel.hideArticle(articleId)
                 recyclerView.isHapticFeedbackEnabled = true
@@ -46,16 +44,16 @@ class SwipeGestureHelper(val articleAdapter: ArticleAdapter,
 
             ItemTouchHelper.RIGHT -> {
                 // pin item
-                val article = articleAdapter.listArticles[position]
+                val article = newsAdapter.listArticles[position]
                 val articleId = article.id
                 val pin = article.pinned ?: false
-                viewModel.pinItem(articleId, !pin)
+                viewModel.pinArticle(articleId, !pin)
                 recyclerView.isHapticFeedbackEnabled = true
                 recyclerView.performHapticFeedback(HapticFeedbackConstants.CONFIRM, HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING)
 
                 Snackbar.make(recyclerView, "", Snackbar.LENGTH_LONG)
                     .setAction("Undo") {
-                        viewModel.pinItem(articleId, pin)
+                        viewModel.pinArticle(articleId, pin)
                     }.show()
             }
         }

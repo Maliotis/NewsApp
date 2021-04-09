@@ -1,16 +1,12 @@
-package com.maliotis.newsapp.fragments
+package com.maliotis.newsapp.fragments.articleFragment
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.util.DisplayMetrics
 import android.view.View
-import android.view.WindowManager
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.ProgressBar
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.coordinatorlayout.widget.CoordinatorLayout
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.maliotis.newsapp.R
 

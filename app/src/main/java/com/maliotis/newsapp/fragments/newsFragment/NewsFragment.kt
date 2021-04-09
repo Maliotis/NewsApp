@@ -1,4 +1,4 @@
-package com.maliotis.newsapp.fragments
+package com.maliotis.newsapp.fragments.newsFragment
 
 import android.os.Bundle
 import android.util.Log
@@ -10,9 +10,10 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.maliotis.newsapp.R
 import com.maliotis.newsapp.enums.ApiStatus
-import com.maliotis.newsapp.fragments.adapters.ArticleAdapter
+import com.maliotis.newsapp.fragments.adapters.NewsAdapter
 import com.maliotis.newsapp.repository.realm.Article
 import com.maliotis.newsapp.viewModels.NewsViewModel
 import io.reactivex.Observable
@@ -29,7 +30,9 @@ class NewsFragment: Fragment(), ArticleClickListener {
     private var disposables = CompositeDisposable()
 
     lateinit var newsRecyclerView: RecyclerView
-    lateinit var articleAdapter: ArticleAdapter
+    lateinit var newsAdapter: NewsAdapter
+
+    lateinit var newsSwipeRefreshLayout: SwipeRefreshLayout
 
     var state: Int? = null
 
@@ -43,16 +46,15 @@ class NewsFragment: Fragment(), ArticleClickListener {
         val view = inflater.inflate(R.layout.news_layout, container, false)
 
         newsRecyclerView = view.findViewById(R.id.newsRecyclerView)
-        articleAdapter = ArticleAdapter(this)
+        newsSwipeRefreshLayout = view.findViewById(R.id.newsSwipeRefreshLayout)
+        newsAdapter = NewsAdapter(this)
         val linearLayout = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
-        newsRecyclerView.adapter = articleAdapter
+        newsRecyclerView.adapter = newsAdapter
         newsRecyclerView.layoutManager = linearLayout
 
-        val swipeGestureHelper = SwipeGestureHelper(articleAdapter, newsRecyclerView, newsViewModel)
+        val swipeGestureHelper = SwipeGestureHelper(newsAdapter, newsRecyclerView, newsViewModel)
         val itemTouchHelper = ItemTouchHelper(swipeGestureHelper)
         itemTouchHelper.attachToRecyclerView(newsRecyclerView)
-
-
 
         return view
     }
@@ -61,7 +63,7 @@ class NewsFragment: Fragment(), ArticleClickListener {
         super.onViewCreated(view, savedInstanceState)
 
         val disp = onScrollObservable(newsRecyclerView)
-            .debounce(1000, TimeUnit.MILLISECONDS)
+            .throttleFirst(1000, TimeUnit.MILLISECONDS)
             .subscribeOn(AndroidSchedulers.mainThread())
             .subscribe {
                 if (it) {
@@ -74,30 +76,34 @@ class NewsFragment: Fragment(), ArticleClickListener {
         scrollWhenMovingFirstItem()
 
         val newsApiDisp = newsViewModel.newsApiSucceeded.subscribe { apiStatus ->
+            newsSwipeRefreshLayout.isRefreshing = false
             when (apiStatus) {
                 ApiStatus.NOINTERNET -> {
-                    // alert user and show cached-data
+                    // TODO alert user
                     Log.d(TAG, "newsApiSucceeded: NOINTERNET")
                 }
 
                 ApiStatus.RATELIMIT -> {
-                    // alert user with animation
+                    // TODO alert user
                     Log.d(TAG, "newsApiSucceeded: RATELIMIT")
                 }
 
                 ApiStatus.MAXIMUMRESULTS -> {
+                    // TODOalert user
                     Log.d(TAG, "newsApiSucceeded: MAXIMUMRESULTS")
                 }
 
                 ApiStatus.FAILED -> {
-                    // alert user
+                    // TODO alert user
                     Log.d(TAG, "newsApiSucceeded: FAILED")
                 }
 
                 ApiStatus.SUCCESS -> {
+                    // TODO alert user
                     Log.d(TAG, "newsApiSucceeded: SUCCESS")
                 }
 
+                // else statement included to make the when statement exhaustive
                 else -> {
                     // empty
                  }
@@ -107,9 +113,12 @@ class NewsFragment: Fragment(), ArticleClickListener {
         disposables.add(newsApiDisp)
 
         newsViewModel.getArticles().observe(viewLifecycleOwner, { item ->
-            articleAdapter.setData(item)
+            newsAdapter.setData(item)
         })
 
+        newsSwipeRefreshLayout.setOnRefreshListener {
+            newsViewModel.getNews()
+        }
 
     }
 
@@ -136,7 +145,7 @@ class NewsFragment: Fragment(), ArticleClickListener {
      */
     private fun scrollToPosition(position: Int?) {
         if (position == null) return
-        articleAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
+        newsAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
 
             override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
                 super.onItemRangeInserted(positionStart, itemCount)
@@ -148,7 +157,7 @@ class NewsFragment: Fragment(), ArticleClickListener {
                                 .isViewPartiallyVisible(viewAtPosition, false, true)) {
                     newsRecyclerView.post { layoutManager.scrollToPosition(position) }
                 }
-                articleAdapter.unregisterAdapterDataObserver(this)
+                newsAdapter.unregisterAdapterDataObserver(this)
 
             }
         })
@@ -159,12 +168,22 @@ class NewsFragment: Fragment(), ArticleClickListener {
      * https://stackoverflow.com/questions/27992427/recyclerview-adapter-notifyitemmoved0-1-scrolls-screen
      */
     private fun scrollWhenMovingFirstItem() {
-        articleAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
+        newsAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
 
             override fun onItemRangeMoved(fromPosition: Int, toPosition: Int, itemCount: Int) {
                 super.onItemRangeMoved(fromPosition, toPosition, itemCount)
-                val layoutManager: LinearLayoutManager = newsRecyclerView.layoutManager as LinearLayoutManager
-                layoutManager.scrollToPosition(fromPosition)
+                if (fromPosition == 0) {
+
+                    val layoutManager: LinearLayoutManager =
+                        newsRecyclerView.layoutManager as LinearLayoutManager
+                    val viewAtPosition = layoutManager.findViewByPosition(toPosition - 1)
+                    val firstVisibleItem = layoutManager.findFirstVisibleItemPosition()
+                    Log.d(TAG, "onItemRangeMoved: firstVisibleItem = $firstVisibleItem")
+                    if (viewAtPosition != null && firstVisibleItem == 0) {
+                        Log.d(TAG, "onItemRangeMoved: scrolling to position = $fromPosition")
+                        layoutManager.scrollToPosition(fromPosition)
+                    }
+                }
             }
         })
     }
