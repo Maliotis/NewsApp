@@ -18,6 +18,7 @@ import com.maliotis.newsapp.convertDPToPixels
 import com.maliotis.newsapp.enums.ApiStatus
 import com.maliotis.newsapp.enums.ScrollState
 import com.maliotis.newsapp.fragments.adapters.NewsAdapter
+import com.maliotis.newsapp.onRefreshObservable
 import com.maliotis.newsapp.onScrollObservable
 import com.maliotis.newsapp.repository.realm.Article
 import com.maliotis.newsapp.viewModels.NewsViewModel
@@ -72,7 +73,6 @@ class NewsFragment: Fragment(), ArticleClickListener {
         scrollWhenMovingFirstItem()
 
         val newsApiDisp = newsViewModel.newsApiSucceeded.subscribe { apiStatus ->
-            newsSwipeRefreshLayout.isRefreshing = false
             when (apiStatus) {
                 ApiStatus.NOINTERNET -> {
                     Snackbar.make(newsRecyclerView, "No internet", Snackbar.LENGTH_LONG).show()
@@ -98,8 +98,8 @@ class NewsFragment: Fragment(), ArticleClickListener {
                 else -> {
                     // empty
                  }
-
             }
+            newsSwipeRefreshLayout.isRefreshing = false
         }
         disposables.add(newsApiDisp)
 
@@ -107,20 +107,28 @@ class NewsFragment: Fragment(), ArticleClickListener {
             newsAdapter.setData(item)
         })
 
-        newsSwipeRefreshLayout.setOnRefreshListener {
-            newsViewModel.getNews()
-        }
+        onRefreshObserver()
 
     }
 
     private fun onScrollObserver() {
         val disp = newsRecyclerView.onScrollObservable()
-            .throttleLast(400, TimeUnit.MILLISECONDS)
+            .throttleLast(1000, TimeUnit.MILLISECONDS)
             .subscribeOn(AndroidSchedulers.mainThread())
             .subscribe {
                 if (it == ScrollState.BOTTOM) {
                     newsViewModel.getOlderNews()
                 }
+            }
+        disposables.add(disp)
+    }
+
+    private fun onRefreshObserver() {
+        val disp = newsSwipeRefreshLayout.onRefreshObservable()
+            .throttleFirst(1000, TimeUnit.MILLISECONDS)
+            .subscribeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                newsViewModel.getNews()
             }
         disposables.add(disp)
     }
@@ -176,7 +184,6 @@ class NewsFragment: Fragment(), ArticleClickListener {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        Log.d(TAG, "onSaveInstanceState: saving state")
         outState.putInt("state", (newsRecyclerView.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition())
     }
 

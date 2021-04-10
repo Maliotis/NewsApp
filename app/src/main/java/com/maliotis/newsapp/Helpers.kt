@@ -11,6 +11,7 @@ import android.view.View
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_SETTLING
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
@@ -57,6 +58,14 @@ fun isoToDate(isoString: String?): String {
         }
     }
     return ""
+}
+
+fun <T: SwipeRefreshLayout> T.onRefreshObservable(): Observable<Unit> {
+    return Observable.create { emitter ->
+        this.setOnRefreshListener {
+            emitter.onNext(Unit)
+        }
+    }
 }
 
 fun <T: RecyclerView> T.onScrollObservable(): Observable<ScrollState> {

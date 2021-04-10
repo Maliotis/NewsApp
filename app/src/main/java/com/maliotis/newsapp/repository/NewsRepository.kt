@@ -63,7 +63,6 @@ class NewsRepository {
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ news ->
-                Log.d(TAG, "onResponse: news ${news?.status}")
                 subject.onNext(ApiStatus.SUCCESS)
                 setRealmIDsAndAttributes(news)
 
