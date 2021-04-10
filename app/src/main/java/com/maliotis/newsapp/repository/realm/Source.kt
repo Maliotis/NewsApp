@@ -1,14 +1,7 @@
-package com.maliotis.newsapp.repository.realm
+package com.maliotis.newsapp.model
 
-import io.realm.RealmModel
-import io.realm.annotations.PrimaryKey
-import io.realm.annotations.RealmClass
 
-@RealmClass
-open class Source: RealmModel {
-
-    @PrimaryKey
-    var realmId: String? = null
+class Source {
 
     var id: String? = null
     var name: String? = null

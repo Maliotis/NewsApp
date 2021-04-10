@@ -18,31 +18,27 @@ class RealmApplication: Application() {
 
         Realm.init(this)
 
-        val migration = object: RealmMigration {
-            override fun migrate(realm: DynamicRealm, oldVersion: Long, newVersion: Long) {
-                // DynamicRealm exposes an editable schema
-                val schema: RealmSchema = realm.schema
+        val migration = RealmMigration { realm, oldVersion, newVersion -> // DynamicRealm exposes an editable schema
+            val schema: RealmSchema = realm.schema
 
-                var version = oldVersion
+            var version = oldVersion
 
-                if (version == 0L) {
-                    schema.get("Article")!!
-                            .addField("hidden", Boolean::class.java)
-                            .setNullable("hidden", true)
-                    version++
-                }
-
-                if (version == 1L) {
-                    schema.get("Article")!!
-                        .addField("pinned", Boolean::class.java)
-                        .setNullable("pinned", true)
-                }
+            if (version == 0L) {
+                schema.get("Article")!!
+                    .addField("hidden", Boolean::class.java)
+                    .setNullable("hidden", true)
+                version++
             }
 
+            if (version == 1L) {
+                schema.get("Article")!!
+                    .addField("pinned", Boolean::class.java)
+                    .setNullable("pinned", true)
+            }
         }
 
         val config = RealmConfiguration.Builder()
-                .addModule(Module())
+                //.addModule(Module())
                 .schemaVersion(2) // Must be bumped when the schema changes
                 .migration(migration) // Migration to run
                 .build()
@@ -54,6 +50,3 @@ class RealmApplication: Application() {
     }
 
 }
-
-@RealmModule(classes = [Article::class] )
-open class Module

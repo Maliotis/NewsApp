@@ -7,13 +7,18 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.android.material.snackbar.Snackbar
 import com.maliotis.newsapp.R
+import com.maliotis.newsapp.convertDPToPixels
 import com.maliotis.newsapp.enums.ApiStatus
+import com.maliotis.newsapp.enums.ScrollState
 import com.maliotis.newsapp.fragments.adapters.NewsAdapter
+import com.maliotis.newsapp.onScrollObservable
 import com.maliotis.newsapp.repository.realm.Article
 import com.maliotis.newsapp.viewModels.NewsViewModel
 import io.reactivex.Observable
@@ -34,15 +39,11 @@ class NewsFragment: Fragment(), ArticleClickListener {
 
     lateinit var newsSwipeRefreshLayout: SwipeRefreshLayout
 
-    var state: Int? = null
-
     override fun onCreateView(
             inflater: LayoutInflater,
             container: ViewGroup?,
             savedInstanceState: Bundle?
     ): View? {
-        state = savedInstanceState?.getInt("state")
-
         val view = inflater.inflate(R.layout.news_layout, container, false)
 
         newsRecyclerView = view.findViewById(R.id.newsRecyclerView)
@@ -51,6 +52,9 @@ class NewsFragment: Fragment(), ArticleClickListener {
         val linearLayout = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         newsRecyclerView.adapter = newsAdapter
         newsRecyclerView.layoutManager = linearLayout
+        val itemDecorator = VerticalSpaceItemDecoration(convertDPToPixels(16f, requireContext()).toInt())
+        newsRecyclerView.addItemDecoration(itemDecorator)
+
 
         val swipeGestureHelper = SwipeGestureHelper(newsAdapter, newsRecyclerView, newsViewModel)
         val itemTouchHelper = ItemTouchHelper(swipeGestureHelper)
@@ -61,17 +65,9 @@ class NewsFragment: Fragment(), ArticleClickListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val state = savedInstanceState?.getInt("state")
 
-        val disp = onScrollObservable(newsRecyclerView)
-            .throttleFirst(1000, TimeUnit.MILLISECONDS)
-            .subscribeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                if (it) {
-                    newsViewModel.getOlderNews()
-                }
-            }
-        disposables.add(disp)
-
+        onScrollObserver()
         scrollToPosition(state)
         scrollWhenMovingFirstItem()
 
@@ -79,27 +75,22 @@ class NewsFragment: Fragment(), ArticleClickListener {
             newsSwipeRefreshLayout.isRefreshing = false
             when (apiStatus) {
                 ApiStatus.NOINTERNET -> {
-                    // TODO alert user
-                    Log.d(TAG, "newsApiSucceeded: NOINTERNET")
+                    Snackbar.make(newsRecyclerView, "No internet", Snackbar.LENGTH_LONG).show()
                 }
 
                 ApiStatus.RATELIMIT -> {
-                    // TODO alert user
-                    Log.d(TAG, "newsApiSucceeded: RATELIMIT")
+                    Snackbar.make(newsRecyclerView, "Rate limit reached", Snackbar.LENGTH_LONG).show()
                 }
 
                 ApiStatus.MAXIMUMRESULTS -> {
-                    // TODOalert user
-                    Log.d(TAG, "newsApiSucceeded: MAXIMUMRESULTS")
+                    Snackbar.make(newsRecyclerView, "Maximum results", Snackbar.LENGTH_LONG).show()
                 }
 
                 ApiStatus.FAILED -> {
-                    // TODO alert user
-                    Log.d(TAG, "newsApiSucceeded: FAILED")
+                    Snackbar.make(newsRecyclerView, "Failed", Snackbar.LENGTH_LONG).show()
                 }
 
                 ApiStatus.SUCCESS -> {
-                    // TODO alert user
                     Log.d(TAG, "newsApiSucceeded: SUCCESS")
                 }
 
@@ -122,17 +113,16 @@ class NewsFragment: Fragment(), ArticleClickListener {
 
     }
 
-    private fun onScrollObservable(recyclerView: RecyclerView): Observable<Boolean> {
-        return Observable.create { emitter ->
-            recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                    super.onScrollStateChanged(recyclerView, newState)
-                    if (!recyclerView.canScrollVertically(1)) {
-                        emitter.onNext(true)
-                    }
+    private fun onScrollObserver() {
+        val disp = newsRecyclerView.onScrollObservable()
+            .throttleLast(400, TimeUnit.MILLISECONDS)
+            .subscribeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                if (it == ScrollState.BOTTOM) {
+                    newsViewModel.getOlderNews()
                 }
-            })
-        }
+            }
+        disposables.add(disp)
     }
 
     override fun itemClicked(position: Int, article: Article) {
@@ -173,14 +163,10 @@ class NewsFragment: Fragment(), ArticleClickListener {
             override fun onItemRangeMoved(fromPosition: Int, toPosition: Int, itemCount: Int) {
                 super.onItemRangeMoved(fromPosition, toPosition, itemCount)
                 if (fromPosition == 0) {
-
                     val layoutManager: LinearLayoutManager =
                         newsRecyclerView.layoutManager as LinearLayoutManager
-                    val viewAtPosition = layoutManager.findViewByPosition(toPosition - 1)
                     val firstVisibleItem = layoutManager.findFirstVisibleItemPosition()
-                    Log.d(TAG, "onItemRangeMoved: firstVisibleItem = $firstVisibleItem")
-                    if (viewAtPosition != null && firstVisibleItem == 0) {
-                        Log.d(TAG, "onItemRangeMoved: scrolling to position = $fromPosition")
+                    if (firstVisibleItem == 0) {
                         layoutManager.scrollToPosition(fromPosition)
                     }
                 }

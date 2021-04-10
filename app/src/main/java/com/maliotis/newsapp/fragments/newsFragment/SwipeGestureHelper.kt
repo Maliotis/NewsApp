@@ -24,33 +24,31 @@ class SwipeGestureHelper(val newsAdapter: NewsAdapter,
     }
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-
         val position = viewHolder.adapterPosition
 
         when(direction) {
+
+            // hide item
             ItemTouchHelper.LEFT -> {
-                // hide item
                 val article = newsAdapter.listArticles[position]
                 val articleId = article.id
                 viewModel.hideArticle(articleId)
                 recyclerView.isHapticFeedbackEnabled = true
                 recyclerView.performHapticFeedback(HapticFeedbackConstants.GESTURE_END, HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING)
-
                 Snackbar.make(recyclerView, "", Snackbar.LENGTH_LONG)
                         .setAction("Undo") {
                             viewModel.hideArticle(articleId, false)
                         }.show()
             }
 
+            // pin/unpin item
             ItemTouchHelper.RIGHT -> {
-                // pin item
                 val article = newsAdapter.listArticles[position]
                 val articleId = article.id
                 val pin = article.pinned ?: false
                 viewModel.pinArticle(articleId, !pin)
                 recyclerView.isHapticFeedbackEnabled = true
                 recyclerView.performHapticFeedback(HapticFeedbackConstants.CONFIRM, HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING)
-
                 Snackbar.make(recyclerView, "", Snackbar.LENGTH_LONG)
                     .setAction("Undo") {
                         viewModel.pinArticle(articleId, pin)

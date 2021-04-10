@@ -2,14 +2,15 @@ package com.maliotis.newsapp
 
 import android.content.Context
 import android.graphics.drawable.Drawable
-import android.media.Image
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
+import android.util.Log
 import android.util.TypedValue
-import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_SETTLING
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
@@ -18,12 +19,9 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
-import com.bumptech.glide.request.target.Target.SIZE_ORIGINAL
-import com.google.gson.Gson
-import com.maliotis.newsapp.repository.realm.Article
+import com.maliotis.newsapp.enums.ScrollState
 
 import io.reactivex.Observable
-import io.realm.RealmModel
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -61,6 +59,27 @@ fun isoToDate(isoString: String?): String {
     return ""
 }
 
+fun <T: RecyclerView> T.onScrollObservable(): Observable<ScrollState> {
+    return Observable.create { emitter ->
+        this.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                if (!recyclerView.canScrollVertically(1)) {
+                    emitter.onNext(ScrollState.BOTTOM)
+                }
+            }
+
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                if (dy < 0) {
+                    emitter.onNext(ScrollState.CANCEL)
+                }
+            }
+
+        })
+    }
+}
+
 fun <T: androidx.appcompat.widget.Toolbar> T.getNavigationOnClickObservable(): Observable<View> {
     return Observable.create { emitter ->
         this.setNavigationOnClickListener {
@@ -79,26 +98,16 @@ fun <T: androidx.appcompat.widget.Toolbar> T.getMenuItemClickObservable(): Obser
 }
 
 
-fun ImageView.load(url: String?, loadOnlyFromCache: Boolean = false, onLoadingFinished: () -> Unit = {}) {
-    val listener = object : RequestListener<Drawable> {
-        override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {
-            onLoadingFinished()
-            return false
-        }
-
-        override fun onResourceReady(resource: Drawable?, model: Any?, target: Target<Drawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
-            onLoadingFinished()
-            return false
-        }
-    }
+/**
+ * Convenient method to load ImageView content using the Glide library
+ */
+fun ImageView.load(url: String?, cornerRadius: Int) {
     val requestOptions = RequestOptions.placeholderOf(R.drawable.placeholder)
-            .transform(CenterCrop(), RoundedCorners(18))
-            .onlyRetrieveFromCache(loadOnlyFromCache)
+            .transform(CenterCrop(), RoundedCorners(cornerRadius))
 
     Glide.with(this)
             .load(url)
             .apply(requestOptions)
-            .listener(listener)
             .into(this)
 }
 

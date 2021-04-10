@@ -12,9 +12,9 @@ object RetrofitCreator {
     var API_BASE_URL = "https://newsapi.org/"
     var version2 = "v2"
     var typeEverything = "everything"
-    var typeTopHeadlines = "top-headlines"
 
-    var options = mutableMapOf<String, String>("q" to "entertainment", "apiKey" to Keys.apiKey())
+    var options = mutableMapOf("q" to "entertainment", "language" to "en", "sortBy" to "publishedAt",
+        "apiKey" to Keys.apiKey())
 
     var httpClient = OkHttpClient.Builder()
 

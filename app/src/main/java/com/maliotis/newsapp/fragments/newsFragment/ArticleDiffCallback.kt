@@ -22,16 +22,17 @@ class ArticleDiffCallback(private val oldList: List<Article>, private val newLis
         return oldList[oldItemPosition].id == newList[newItemPosition].id
     }
 
+    /**
+     * Compare only the [Article.pinned] attribute as that's the only thing we update
+     * Note: the [Article.hidden] attribute when changed to true is not part of the recyclerView
+     * therefore no need to compare
+     */
     override fun areContentsTheSame(oldPosition: Int, newPosition: Int): Boolean {
         if (!oldList[oldPosition].isValid()) {
             return false
         }
         val hidden = oldList[oldPosition].pinned ?: false
         val hidden1 = newList[newPosition].pinned ?: false
-
-        if (hidden != hidden1) {
-            Log.d("TAG", "areContentsTheSame: not the same")
-        }
 
         return hidden == hidden1
     }

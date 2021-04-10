@@ -19,8 +19,6 @@ import java.util.concurrent.TimeUnit
 
 class ArticleFragment: Fragment() {
 
-    val TAG = ArticleFragment::class.java.simpleName
-
     val viewModel: NewsViewModel by activityViewModels()
     val disposables = CompositeDisposable()
 
@@ -48,7 +46,7 @@ class ArticleFragment: Fragment() {
 
         webView.settings.javaScriptEnabled = true
         webView.settings.useWideViewPort = true
-        webView.webViewClient = ArticleWebViewClient(requireContext())
+        webView.webViewClient = ArticleWebViewClient()
         webView.settings.builtInZoomControls = true
         webView.settings.displayZoomControls = false
         webView.settings.setSupportZoom(true)

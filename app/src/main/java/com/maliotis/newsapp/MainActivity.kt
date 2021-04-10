@@ -13,8 +13,6 @@ import com.maliotis.newsapp.viewModels.NewsViewModel
 
 class MainActivity : AppCompatActivity() {
 
-    val TAG = MainActivity::class.java.simpleName
-
     val viewModel: NewsViewModel by viewModels()
     var orientationChangeFirstTime = false
 

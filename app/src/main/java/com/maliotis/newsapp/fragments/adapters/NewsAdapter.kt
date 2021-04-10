@@ -38,10 +38,8 @@ class NewsAdapter(val listener: ArticleClickListener): RecyclerView.Adapter<News
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val article = listArticles[position]
 
-        holder.imageView.load(article.urlToImage, false) {
-            onLoadCompleted(position)
-            // possibly save image to db
-        }
+        val cornerRadius = convertDPToPixels(10f, holder.itemView.context).toInt()
+        holder.imageView.load(article.urlToImage, cornerRadius)
         holder.title.text = article.title
         holder.imageView.transitionName = article.urlToImage
         holder.publishedAt.text = isoToDate(article.publishedAt)
@@ -59,10 +57,6 @@ class NewsAdapter(val listener: ArticleClickListener): RecyclerView.Adapter<News
         listArticles.clear()
         listArticles.addAll(newArticles)
         diffResult.dispatchUpdatesTo(this)
-    }
-
-    private fun onLoadCompleted(position: Int) {
-
     }
 
     override fun getItemCount(): Int {

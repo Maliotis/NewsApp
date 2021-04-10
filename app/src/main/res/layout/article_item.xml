@@ -12,8 +12,8 @@
         android:layout_height="100dp"
         android:scaleType="centerCrop"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="12dp"
+
+
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -78,6 +78,8 @@
         android:layout_marginStart="12dp"
         android:layout_marginEnd="12dp"
         tools:text="Description about the article is going to be placed here, and any other content is also going to be placed here. Anything further though"
+        android:breakStrategy="high_quality"
+        android:hyphenationFrequency="full"
         android:fontFamily="@font/antic_didone"
         android:textColor="@color/black"
         android:textSize="14sp"

@@ -29,6 +29,7 @@ class NewsRepository {
     val disposables = CompositeDisposable()
 
     fun getNews(subject: Subject<ApiStatus>) {
+        options["page"] = "1"
         val newsCall = newsService.listNews(
             version2,
             typeEverything,
@@ -75,7 +76,6 @@ class NewsRepository {
                         r.insertOrUpdate(uniqueArticles)
                     }, { // onSuccess
                         Log.d(TAG, "onSuccess: realm executed successfully")
-                        //realm.close()
 
                     }, { onError ->
                         Log.e(TAG, "onError: realm failed -- ", onError)
@@ -97,13 +97,6 @@ class NewsRepository {
                     }
                 }
 
-            }, {
-                //onComplete
-                Log.d(TAG, "subscribeToApi: onComplete called")
-            }, {
-                // disposing
-                Log.d(TAG, "subscribeToApi: disposing")
-                //it.dispose()
             })
         disposables.add(sub)
     }
@@ -122,18 +115,25 @@ class NewsRepository {
         }
     }
 
+    /**
+     * Setting IDs to realm objects.
+     * Setting the attributes [Article.pinned] and [Article.hidden] to false as
+     * if the item exists it won't be inserted
+     * therefore won't affect the user's preferences
+     * but if they do get inserted they will have value for comparisons.
+     */
     private fun setRealmIDsAndAttributes(news: News?) {
         news?.articles?.forEach {
             it.id = it.url.hashCode().toString()
             it.source?.realmId = UUID.randomUUID().toString()
-            // setting these values to false as if the item exists it won't be inserted
-            // therefore won't affect the user's preferences
-            // but if they do get inserted they will have value for comparisons
             it.pinned = false
             it.hidden = false
         }
     }
 
+    /**
+     * Returns the unique articles from list [articles] parameter
+     */
     private fun uniqueArticles(articles: List<Article>, r: Realm): List<Article> {
         val allArticles = r.where(Article::class.java).findAll()
         val uniqueArticles = mutableListOf<Article>()
