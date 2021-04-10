@@ -34,12 +34,18 @@ class RealmApplication: Application() {
                 schema.get("Article")!!
                     .addField("pinned", Boolean::class.java)
                     .setNullable("pinned", true)
+                version++
+            }
+
+            if (version == 2L) {
+                schema.get("Article")!!
+                    .removeField("source")
             }
         }
 
         val config = RealmConfiguration.Builder()
                 //.addModule(Module())
-                .schemaVersion(2) // Must be bumped when the schema changes
+                .schemaVersion(3) // Must be bumped when the schema changes
                 .migration(migration) // Migration to run
                 .build()
 

@@ -10,7 +10,6 @@ open class Article: RealmModel {
     @PrimaryKey
     var id: String? = null
 
-    var source: Source? = null
     var author: String? = null
     var title: String? = null
     var description: String? = null

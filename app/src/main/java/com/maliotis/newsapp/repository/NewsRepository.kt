@@ -125,7 +125,7 @@ class NewsRepository {
     private fun setRealmIDsAndAttributes(news: News?) {
         news?.articles?.forEach {
             it.id = it.url.hashCode().toString()
-            it.source?.realmId = UUID.randomUUID().toString()
+            //it.source?.realmId = UUID.randomUUID().toString()
             it.pinned = false
             it.hidden = false
         }
